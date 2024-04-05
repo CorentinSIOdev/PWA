@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <title>Ma Super App de Films</title>
+</head>
+<body>
+  <h1>Ma liste de films JSON</h1>
+  <ul id="movie-list-json"></ul>
+  <h1>Ma liste de films API</h1>
+  <ul id="movie-list-api"></ul>
+  <script src="app.js"></script>
+
+  <!-- Enregistrement du service worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(registration => {
+            console.log('Service Worker enregistré avec succès : ', registration);
+          })
+          .catch(error => {
+            console.log('Erreur lors de l\'enregistrement du Service Worker : ', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
