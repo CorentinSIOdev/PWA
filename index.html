@@ -10,8 +10,20 @@
 <body>
   <h1>Ma liste de films JSON</h1>
   <ul id="movie-list-json"></ul>
-  <h1>Ma liste de films API</h1>
+  <h1>Ma liste de films API PUBLIC</h1>
   <ul id="movie-list-api"></ul>
+  <h1>Ma liste de films API PERSO</h1>
+  <form id="add-movie-form">
+    <label for="movie-title">Titre du film :</label><br>
+    <input type="text" id="movie-title" name="title"><br><br>
+    
+    <label for="image-url">URL de l'image :</label><br>
+    <input type="text" id="image-url" name="imageUrl"><br><br>
+    
+    <button type="submit">Ajouter le film</button>
+  </form>
+  <br>
+  <ul id="movie-list-api-perso"></ul>
   <script src="app.js"></script>
 
   <!-- Enregistrement du service worker -->

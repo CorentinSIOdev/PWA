@@ -21,7 +21,8 @@ ul {
 }
 
 #movie-list-json,
-#movie-list-api {
+#movie-list-api,
+#movie-list-api-perso {
     grid-area: movie-list;
 }
 
@@ -46,3 +47,41 @@ strong {
     margin-bottom: 0.5rem;
     color: #333;
 }
+
+
+#add-movie-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  #add-movie-form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  #add-movie-form button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #add-movie-form button[type="submit"]:hover {
+    background-color: #45a049;
+  }
+  
+  #add-movie-form label {
+    font-weight: bold;
+  }
+  
