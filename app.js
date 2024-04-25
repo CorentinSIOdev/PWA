@@ -43,7 +43,7 @@ function fetchMoviesOMDB() {
       console.log(movie);
       movie.results.forEach((movie) => {
         const li = document.createElement("li");
-        li.innerHTML = `<strong>${movie.title}</strong> - <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title} poster">`;
+        li.innerHTML = `<strong>${movie.title}</strong> <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title} poster">`;
         movieList.appendChild(li);
       });
     })
@@ -61,7 +61,7 @@ function fetchMoviesAPI() {
     .then((movies) => {
       movies.forEach((movie) => {
         const li = document.createElement("li");
-        li.innerHTML = `<strong>${movie.title}</strong> - <img src="${movie.imageUrl}" alt="${movie.title} poster">`;
+        li.innerHTML = `<strong>${movie.title}</strong> <img src="${movie.imageUrl}" alt="${movie.title} poster">`;
         movieListPersonalAPI.appendChild(li);
       });
     })
@@ -100,41 +100,3 @@ addMovieForm.addEventListener("submit", function(event) {
     console.error("Erreur lors de l'ajout du film :", error);
   });
 });
-
-
-const applicationServerKeyVar = 'BJ9FU0V3z5WFXdMwa5Mk5hJJVDf3bH6-sLMkl_tSZA7B0EjuxTqJ_K4GflYadX6PvhKOMzd6nzzbjOUvmy8pqRk';
-
-// Initialize push notifications
-function initializePushNotifications() {
-  if ('Notification' in window && 'serviceWorker' in navigator) {
-      Notification.requestPermission(permission => {
-          if (permission === 'granted') {
-            navigator.serviceWorker.ready
-            .then(registration => registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: applicationServerKeyVar
-            }))
-            .then(subscription => {
-                console.log('Abonnement réussi :', subscription);
-            })
-            .catch(error => console.error('Erreur lors de l\'abonnement aux notifications Push :', error));
-          }
-      });
-  }
-}
-
-// Listen for push notifications
-function listenForPushNotifications() {
-  navigator.serviceWorker.addEventListener('message', event => {
-      const { type, data } = event.data;
-      if (type === 'push-notification') {
-          showPushNotification(data);
-      }
-  });
-}
-
-// Initialize push notifications
-initializePushNotifications();
-
-// Listen for push notifications
-listenForPushNotifications();

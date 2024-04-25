@@ -6,8 +6,6 @@ import fetch from 'node-fetch';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const WEBPUSHR_API_KEY = 'adea10566f3398f4f8a368d27505a24d';
-const WEBPUSHR_AUTH_TOKEN = '87621';
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -46,36 +44,36 @@ app.post('/api/create_movie', async (req, res) => {
         fs.writeFileSync(filmsFilePath, JSON.stringify(filmsData, null, 2));
 
         // Send a Push notification
-        const notificationData = {
-            title: 'Nouveau film ajouté',
-            body: `${title} a été ajouté à la liste des films.`
-        };
-            
-        const response = await fetch('https://api.webpushr.com/v1/notification/send/all', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'webpushrKey': WEBPUSHR_API_KEY,
-                'webpushrAuthToken': WEBPUSHR_AUTH_TOKEN,
-            },
-            body: JSON.stringify({
-                title: notificationData.title,
-                message: notificationData.body,
-                target_url: 'https://127.0.0.1:5000',
-                image: imageUrl
-            })
-        });
-    
-        // Check if the notification was sent successfully
-        if (response.ok) {
-            console.log('Notification Push envoyée avec succès.');
-        } else {
-            console.error('Erreur lors de l\'envoi de la notification Push :', response.statusText);
-            return res.status(500).json({ error: 'Erreur lors de l\'envoi de la notification Push.' });
-        }
+        try {
+            const dataString = `{"title":"Nouveau film ajouté !","message":"Le film ${title} vient d'être ajouté !","target_url":"http://127.0.0.1:5500/"}`;
+            const headers = {
+                'webpushrKey': 'adea10566f3398f4f8a368d27505a24d',
+                'webpushrAuthToken': '87621',
+                'Content-Type': 'application/json'
+            };
+            const options = {
+                url: 'https://api.webpushr.com/v1/notification/send/all',
+                method: 'POST',
+                headers: headers,
+                body: dataString
+            };
+        
+            const response = await fetch(options.url, {
+                method: options.method,
+                headers: options.headers,
+                body: options.body
+            });
 
-        // Répondre avec le nouveau film ajouté
-        res.status(201).json(newFilm);
+            if (response.ok) {
+                console.log('Push notification sent successfully');
+                // Répondre avec le nouveau film ajouté
+                res.status(201).json(newFilm);
+            } else {
+                console.error('Failed to send push notification:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error during push notification request:', error);
+        }
     } catch (error) {
         console.error('Erreur lors de la création du film :', error);
         res.status(500).json({ error: 'Une erreur est survenue lors de la création du film.' });

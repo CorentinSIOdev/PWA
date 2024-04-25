@@ -13,7 +13,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
     .then(cache => {
-        const promises = urlsToCache.map(url => {
+        const promises = urlsToCache.map(async url => {
           return fetch(url)
           .then(response => {
               if (response.ok) {
@@ -49,7 +49,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
+    caches.open(CACHE_NAME).then(async cache => {
       return cache.match(event.request).then(response => {
         const fetchPromise = fetch(event.request).then(networkResponse => {
           // Mettre à jour le cache avec la nouvelle version de la ressource
