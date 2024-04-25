@@ -1,13 +1,7 @@
 const movieListJSON = document.getElementById("movie-list-json");
 const movieList = document.getElementById("movie-list-api");
 const movieListPersonalAPI = document.getElementById("movie-list-api-perso");
-const notificationContainer = document.getElementById("notification-container");
-const notificationIcon = document.getElementById("notification-icon");
-const notificationCounter = document.getElementById("notification-counter");
-const notificationList = document.getElementById("notification-list");
 const addMovieForm = document.getElementById("add-movie-form");
-
-let unreadNotifications = 0;
 
 // Fetch movies from the JSON file
 function fetchMoviesJSON() {
@@ -72,7 +66,6 @@ function fetchMoviesAPI() {
 
 fetchMoviesAPI();
 
-// Post a new movie to the Personal API
 addMovieForm.addEventListener("submit", function(event) {
   event.preventDefault();
 
@@ -87,16 +80,76 @@ addMovieForm.addEventListener("submit", function(event) {
     },
     body: JSON.stringify({ title, imageUrl })
   })
-  .then(response => {
+ .then(response => {
     if (!response.ok) {
       throw new Error("Erreur lors de l'ajout du film");
     }
     return response.json();
   })
-  .then(data => {
-    addMovieForm.reset();
+ .then(data => {
+    // Send a notification if the permission is granted
+    if ("Notification" in window && Notification.permission === "granted") {
+      // Check if service worker is available
+      if ("serviceWorker" in navigator) {
+        send(title); // Send the notification
+      }
+    }
   })
-  .catch(error => {
+ .catch(error => {
     console.error("Erreur lors de l'ajout du film :", error);
   });
 });
+
+// Notifications
+document.addEventListener("DOMContentLoaded", function() {
+  // Ask for permission to send notifications
+  if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+});
+
+const publicVapidKey = "BBShyYWzVgh_tRShAUikcePxPAjh1Kg5a0TKNzZ_hLp8j9yg-scrIUOBerUlpFIiHfzTquJ1tQRgAfBGOdfz0H0";
+
+// Register SW, Register Push, Send Push
+async function send(movieTitle) {
+  // Register Service Worker
+  console.log("Registering service worker...");
+  const register = await navigator.serviceWorker.register("./service-worker.js", {
+    scope: "/",
+  });
+  console.log("Service Worker Registered...");
+
+  // Register Push
+  console.log("Registering Push...");
+  const subscription = await register.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+  });
+  console.log("Push Registered...");
+
+  // Send Push Notification
+  console.log("Sending Push...");
+  await fetch("http://localhost:3000/api/send_notification", {
+    method: "POST",
+    body: JSON.stringify({ movieTitle, subscription }),
+    headers: {
+      "content-type": "application/json",
+    },
+  });
+  console.log("Push Sent...");
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}

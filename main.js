@@ -2,13 +2,50 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import cors from 'cors';
-import fetch from 'node-fetch';
+import PushNotifications from 'node-pushnotifications';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
+
+// Notifications
+const publicVapidKey = "BBShyYWzVgh_tRShAUikcePxPAjh1Kg5a0TKNzZ_hLp8j9yg-scrIUOBerUlpFIiHfzTquJ1tQRgAfBGOdfz0H0";
+const privateVapidKey = "lHIQ_Ppek0drPb0XOpysJyB2C0TbQxhvl8I-9j-fSXI";
+
+app.post("/api/send_notification", (req, res) => {
+  // Get pushSubscription object
+  const { movieTitle, subscription } = req.body;
+  
+  const settings = {
+    web: {
+      vapidDetails: {
+        subject: "mailto:pwa@project.com",
+        publicKey: publicVapidKey,
+        privateKey: privateVapidKey,
+      },
+      gcmAPIKey: "gcmkey",
+      TTL: 2419200,
+      contentEncoding: "aes128gcm",
+      headers: {},
+    },
+    isAlwaysUseFCM: false,
+  };
+
+  // Send 201 - resource created
+  const push = new PushNotifications(settings);
+
+  // Create payload
+  const payload = { title: "Un nouveau film est disponible !", body: "Le film " + movieTitle + " est maintenant disponible. Venez le découvrir !" };
+  push.send(subscription, payload, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+    }
+  });
+});
 
 // Path to the JSON file containing the movies
 const filmsFilePath = 'api_films.json';
@@ -42,38 +79,8 @@ app.post('/api/create_movie', async (req, res) => {
 
         // Write the updated data to the JSON file
         fs.writeFileSync(filmsFilePath, JSON.stringify(filmsData, null, 2));
-
-        // Send a Push notification
-        try {
-            const dataString = `{"title":"Nouveau film ajouté !","message":"Le film ${title} vient d'être ajouté !","target_url":"http://127.0.0.1:5500/"}`;
-            const headers = {
-                'webpushrKey': 'adea10566f3398f4f8a368d27505a24d',
-                'webpushrAuthToken': '87621',
-                'Content-Type': 'application/json'
-            };
-            const options = {
-                url: 'https://api.webpushr.com/v1/notification/send/all',
-                method: 'POST',
-                headers: headers,
-                body: dataString
-            };
         
-            const response = await fetch(options.url, {
-                method: options.method,
-                headers: options.headers,
-                body: options.body
-            });
-
-            if (response.ok) {
-                console.log('Push notification sent successfully');
-                // Répondre avec le nouveau film ajouté
-                res.status(201).json(newFilm);
-            } else {
-                console.error('Failed to send push notification:', response.status, response.statusText);
-            }
-        } catch (error) {
-            console.error('Error during push notification request:', error);
-        }
+        return res.json(newFilm);
     } catch (error) {
         console.error('Erreur lors de la création du film :', error);
         res.status(500).json({ error: 'Une erreur est survenue lors de la création du film.' });
