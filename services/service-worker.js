@@ -1,12 +1,12 @@
 const CACHE_NAME = 'films-app-cache-v1';
 const urlsToCache = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './movies.json',
-  './icons/icon-512x512.png',
-  './manifest.json'
+  '../',
+  '../index.html',
+  '../public/css/style.css',
+  '../app.js',
+  '../data/local_movies.json',
+  '../public/icons/icon-512x512.png',
+  '../manifest.json'
 ];
 
 self.addEventListener('install', event => {

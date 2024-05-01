@@ -5,7 +5,7 @@ const addMovieForm = document.getElementById("add-movie-form");
 
 // Fetch movies from the JSON file
 function fetchMoviesJSON() {
-    fetch("movies.json")
+    fetch("data/local_movies.json")
     .then((response) => response.json())
     .then((movies) => {
       movies.forEach((movie) => {
@@ -114,8 +114,8 @@ const publicVapidKey = "BBShyYWzVgh_tRShAUikcePxPAjh1Kg5a0TKNzZ_hLp8j9yg-scrIUOB
 async function send(movieTitle) {
   // Register Service Worker
   console.log("Registering service worker...");
-  const register = await navigator.serviceWorker.register("./service-worker.js", {
-    scope: "/",
+  const register = await navigator.serviceWorker.register("./services/service-worker.js", {
+    scope: "/services/",
   });
   console.log("Service Worker Registered...");
 

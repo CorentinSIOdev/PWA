@@ -48,7 +48,7 @@ app.post("/api/send_notification", (req, res) => {
 });
 
 // Path to the JSON file containing the movies
-const filmsFilePath = 'api_films.json';
+const filmsFilePath = 'data/api_movies.json';
 
 // Route to create a new movie
 app.post('/api/create_movie', async (req, res) => {
