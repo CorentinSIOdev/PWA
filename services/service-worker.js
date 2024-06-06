@@ -5,6 +5,7 @@ const urlsToCache = [
   '../public/css/style.css',
   '../app.js',
   '../data/local_movies.json',
+  '../data/api_movies.json',
   '../public/icons/icon-512x512.png',
   '../manifest.json'
 ];
