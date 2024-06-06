@@ -1,12 +1,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
-import cors from 'cors';
 import PushNotifications from 'node-pushnotifications';
+import cors from 'cors';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -14,10 +15,14 @@ app.use(cors());
 const publicVapidKey = "BBShyYWzVgh_tRShAUikcePxPAjh1Kg5a0TKNzZ_hLp8j9yg-scrIUOBerUlpFIiHfzTquJ1tQRgAfBGOdfz0H0";
 const privateVapidKey = "lHIQ_Ppek0drPb0XOpysJyB2C0TbQxhvl8I-9j-fSXI";
 
+// Get public vapid key
+app.get("/api/vapid_key", (req, res) => {
+  res.json({ publicVapidKey });
+})
+
 app.post("/api/send_notification", (req, res) => {
-  // Get pushSubscription object
-  const { movieTitle, subscription } = req.body;
-  
+  const { movieTitle, subscription, imageUrl } = req.body;
+
   const settings = {
     web: {
       vapidDetails: {
@@ -33,16 +38,23 @@ app.post("/api/send_notification", (req, res) => {
     isAlwaysUseFCM: false,
   };
 
-  // Send 201 - resource created
   const push = new PushNotifications(settings);
+  const payload = {
+    title: "Un nouveau film est disponible !",
+    topic: "new-movie",
+    body: "Le film " + movieTitle + " est maintenant disponible. Venez le découvrir !",
+    priority: "high",
+    icon: imageUrl,
+    badge: 2,
+  };
 
-  // Create payload
-  const payload = { title: "Un nouveau film est disponible !", body: "Le film " + movieTitle + " est maintenant disponible. Venez le découvrir !" };
   push.send(subscription, payload, (err, result) => {
     if (err) {
-      console.log(err);
+      console.error(err);
+      return res.status(500).json({ error: "Erreur lors de l'envoi de la notification." });
     } else {
       console.log(result);
+      return res.status(200).json({ success: true });
     }
   });
 });
@@ -52,39 +64,39 @@ const filmsFilePath = 'data/api_movies.json';
 
 // Route to create a new movie
 app.post('/api/create_movie', async (req, res) => {
-    // Get the title and imageUrl from the request body
-    const { title, imageUrl } = req.body;
+  // Récupérer le titre et l'URL de l'image du corps de la requête
+  const { title, imageUrl } = req.body;
 
-    // Check if the title and imageUrl are provided
-    if (!title || !imageUrl) {
-        return res.status(400).json({ error: 'Les champs title et imageUrl sont requis.' });
-    }
+  // Vérifier si le titre, l'URL de l'image et l'abonnement sont fournis
+  if (!title || !imageUrl) {
+      return res.status(400).json({ error: 'Les champs titre et imageUrl sont requis.' });
+  }
 
-    // Create a new film object
-    const newFilm = { title, imageUrl };
+  // Créer un nouvel objet film
+  const newFilm = { title, imageUrl };
 
-    try {
-        // Read the data from the JSON file
-        let filmsData = [];
-        
-        try {
-            const fileContent = fs.readFileSync(filmsFilePath, 'utf-8');
-            filmsData = JSON.parse(fileContent);
-        } catch (readError) {
-            console.error('Erreur lors de la lecture du fichier JSON des films :', readError);
-        }
+  try {
+      // Lire les données à partir du fichier JSON
+      let filmsData = [];
+      
+      try {
+          const fileContent = fs.readFileSync(filmsFilePath, 'utf-8');
+          filmsData = JSON.parse(fileContent);
+      } catch (readError) {
+          console.error('Erreur lors de la lecture du fichier JSON des films :', readError);
+      }
 
-        // Add the new film to the list of films
-        filmsData.push(newFilm);
+      // Ajouter le nouveau film à la liste des films
+      filmsData.push(newFilm);
 
-        // Write the updated data to the JSON file
-        fs.writeFileSync(filmsFilePath, JSON.stringify(filmsData, null, 2));
-        
-        return res.json(newFilm);
-    } catch (error) {
-        console.error('Erreur lors de la création du film :', error);
-        res.status(500).json({ error: 'Une erreur est survenue lors de la création du film.' });
-    }
+      // Écrire les données mises à jour dans le fichier JSON
+      fs.writeFileSync(filmsFilePath, JSON.stringify(filmsData, null, 2));
+
+      return res.json(newFilm);
+  } catch (error) {
+      console.error('Erreur lors de la création du film :', error);
+      res.status(500).json({ error: 'Une erreur est survenue lors de la création du film.' });
+  }
 });
 
 // Get all movies from the json file

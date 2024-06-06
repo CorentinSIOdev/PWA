@@ -48,30 +48,43 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Ignorer les requêtes provenant d'extensions Chrome
+  if (url.protocol === 'chrome-extension:') {
+    return;
+  }
+
   event.respondWith(
     caches.open(CACHE_NAME).then(async cache => {
       return cache.match(event.request).then(response => {
         const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Mettre à jour le cache avec la nouvelle version de la ressource
-          cache.put(event.request, networkResponse.clone());
+          if (networkResponse.ok) {
+            cache.put(event.request, networkResponse.clone());
+          }
           return networkResponse;
         }).catch(() => {
-          // Si la ressource n'est pas disponible en ligne, renvoyer la version en cache
           return response;
         });
 
-        // Renvoyer la ressource en ligne et mettre à jour le cache en arrière-plan
         return response || fetchPromise;
       });
     })
   );
 });
 
+
 // Notifications
 self.addEventListener("push", (e) => {
   const data = e.data.json();
-  console.log("Push Recieved...");
-  self.registration.showNotification(data.title, {
-    body: data.body,
-  });
+  if (data) {
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: data.badge,
+      vibrate: [200, 100, 200, 100, 200, 100, 200],
+      tag: "new-movie-notification",
+    });
+  }
 });
